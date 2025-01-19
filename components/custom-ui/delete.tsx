@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import { useState } from "react";
 
 import { Trash } from "lucide-react";
 import { Button } from "../ui/button";
@@ -18,31 +18,33 @@ import {
 import { toast } from "sonner";
 
 interface DeleteProps {
-  id: string
+  id: string;
 }
 
 const Delete: React.FC<DeleteProps> = ({ id }) => {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onDelete = async() => {
-    try{
-      setIsLoading(true)
-     const res = await fetch(`/api/collections/${id}`,{
+  const onDelete = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`/api/collections/${id}`, {
         method: "DELETE",
       });
 
-      if(res.ok){
-        window.location.href=("/dashboard/collections")
-        toast.success("Collected was deleted successfully", {position: "top-right"})
+      if (res.ok) {
+        window.location.href = "/dashboard/collections";
+        toast.success("Collected was deleted successfully", {
+          position: "top-right",
+        });
       }
-    } catch(error ) {
-      console.log("[DELETE_ERROR]", error)
-      toast.error("Something went wrong. Please try again later")
+    } catch (error) {
+      console.log("[DELETE_ERROR]", error);
+      toast.error("Something went wrong. Please try again later");
     }
-  }
+  };
   return (
     <AlertDialog>
-      <AlertDialogTrigger>
+      <AlertDialogTrigger asChild>
         <Button
           className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
           size="sm"
@@ -50,9 +52,11 @@ const Delete: React.FC<DeleteProps> = ({ id }) => {
           <Trash className="w-5 h-5" />
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="bg-white ">
+      <AlertDialogContent className="bg-white">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-red-500">Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogTitle className="text-red-500">
+            Are you absolutely sure?
+          </AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete your
             account and remove your data from our servers.
@@ -60,7 +64,12 @@ const Delete: React.FC<DeleteProps> = ({ id }) => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="bg-red-1 text-white" onClick={onDelete}>Delete</AlertDialogAction>
+          <AlertDialogAction
+            className="bg-red-500 text-white"
+            onClick={onDelete}
+          >
+            Delete
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

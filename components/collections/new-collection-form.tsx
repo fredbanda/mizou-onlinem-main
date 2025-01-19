@@ -23,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUploader } from "../custom-ui/image-uploader";
+import Delete from "../custom-ui/delete";
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -34,30 +35,44 @@ const formSchema = z.object({
   image: z.string(),
 });
 
-export const CreateNewCollectionForm = () => {
+interface CreateNewCollectionFormProps { 
+  inittialData?: CollectionType | null
+}
+
+
+export const CreateNewCollectionForm: React.FC<CreateNewCollectionFormProps> = ({ inittialData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: inittialData ? inittialData : {
       title: "",
       description: "",
       image: "",
     },
   });
 
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement> | React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && event.shiftKey === false) {
+      event.preventDefault();
+      form.handleSubmit(onSubmit)();
+    }
+  }
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
-      const res = await fetch("/api/collections", {
+      const url = inittialData ? `/api/collections/${inittialData._id}` : "/api/collections";
+      const res = await fetch(url, {
         method: "POST",
         body: JSON.stringify(values),
       });
       if (res.ok) {
         setIsLoading(false);
-        toast.success("Collection created successfully", {
+        toast.success(`Collection  ${inittialData ? "updated" : "created"} successfully`, {
           position: "top-right",
         });
+        window.location.href = "/dashboard/collections";
         router.push("/dashboard/collections");
       }
     } catch (error) {
@@ -70,7 +85,15 @@ export const CreateNewCollectionForm = () => {
 
   return (
     <div className="p-10">
-      <p className="text-heading2-bold">Create New Collection</p>
+      {inittialData ? (
+        <div className="flex items-center justify-between">
+        <p className="text-heading2-bold">Edit Collection</p>
+        <Delete id={inittialData._id} />
+        </div>
+      ):(
+        <p className="text-heading2-bold">Create New Collection</p>
+      )}
+      
       <Separator className="bg-grey-1  my-4 mb-7" />
       <div className="space-y-6">
         <Form {...form}>
@@ -86,6 +109,7 @@ export const CreateNewCollectionForm = () => {
                       placeholder="e.g. Wedding ring"
                       {...field}
                       disabled={isLoading}
+                      onKeyDown={handleKeyPress}
                     />
                   </FormControl>
                   <FormMessage />
@@ -104,6 +128,7 @@ export const CreateNewCollectionForm = () => {
                       {...field}
                       rows={5}
                       disabled={isLoading}
+                      onKeyDown={handleKeyPress}
                     />
                   </FormControl>
                   <FormMessage />
@@ -126,6 +151,7 @@ export const CreateNewCollectionForm = () => {
                         // Delay state update to avoid triggering it during rendering
                         setTimeout(() => field.onChange(""), 0);
                       }}
+                     
                     />
                   </FormControl>
                   <FormMessage />
@@ -142,9 +168,9 @@ export const CreateNewCollectionForm = () => {
                 Submit
               </Button>
               <Button
-                type="button"
+              type="button"
                 className="bg-red-600 text-white w-1/3"
-                onClick={() => router.push("/collections")}
+                onClick={() => router.push("/dashboard/collections")}
               >
                 <Trash />
                 Discard?
